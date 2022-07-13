@@ -34,8 +34,8 @@ class WriteReviewViewController: UIViewController {
     // MARK: - LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        keyboardIOManager.updateTextView = {
-            self.writeReviewTextView.insertText($0)
+        keyboardIOManager.updateTextView = { [weak self] in
+            self?.writeReviewTextView.insertText($0)
         }
         view.backgroundColor = .systemBackground
         configureSubViews()
