@@ -35,11 +35,24 @@ class WriteReviewViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         keyboardIOManager.updateTextView = { [weak self] in
-            self?.writeReviewTextView.insertText($0)
+//            self?.writeReviewTextView.insertText($0)
+            self?.writeReviewTextView.text = $0
+            print("before cusor: ", self?.characterBeforeCursor())
         }
         view.backgroundColor = .systemBackground
         configureSubViews()
         setConstraintsOfWriteReviewTextView()
+    }
+    
+    /// 텍스트뷰의 커서 앞의 문자 가져오기
+    func characterBeforeCursor() -> String? {
+        if let cursorRange = writeReviewTextView.selectedTextRange {
+            if let newPosition = writeReviewTextView.position(from: cursorRange.start, offset: -1) {
+                let range = writeReviewTextView.textRange(from: newPosition, to: cursorRange.start)
+                return writeReviewTextView.text(in: range!)
+            }
+        }
+        return nil
     }
     
     override func viewWillDisappear(_ animated: Bool) {
