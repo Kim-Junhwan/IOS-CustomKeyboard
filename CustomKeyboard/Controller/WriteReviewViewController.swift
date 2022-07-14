@@ -38,6 +38,7 @@ class WriteReviewViewController: UIViewController {
 //            self?.writeReviewTextView.insertText($0)
             self?.writeReviewTextView.text = $0
             print("before cusor: ", self?.characterBeforeCursor())
+            self?.writeReviewTextView.insertText($0)
         }
         view.backgroundColor = .systemBackground
         configureSubViews()

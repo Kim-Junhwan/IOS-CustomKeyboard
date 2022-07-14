@@ -379,6 +379,10 @@
                 <constraint firstItem="cb8-3y-gVv" firstAttribute="bottom" secondItem="o1t-U6-YmM" secondAttribute="bottom" constant="-5" id="zYs-0E-dFs"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="firstLineStackView" destination="0xX-V9-Jn2" id="NcB-5E-GLe"/>
+                <outlet property="shiftButton" destination="5sC-sD-IA2" id="GmI-IO-b9l"/>
+            </connections>
             <point key="canvasLocation" x="138.40579710144928" y="154.01785714285714"/>
         </view>
     </objects>
