@@ -7,26 +7,13 @@
 
 import Foundation
 
-struct Hangul {
-    let cho:[String] = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"]
-    
-    let jung:[String] = ["ㅏ", "ㅐ", "ㅑ", "ㅒ", "ㅓ", "ㅔ", "ㅕ", "ㅖ", "ㅗ", "ㅘ", "ㅙ", "ㅚ", "ㅛ", "ㅜ", "ㅝ","ㅞ", "ㅟ", "ㅠ", "ㅡ", "ㅢ", "ㅣ"]
-    let jong:[String] = [" ", "ㄱ", "ㄲ", "ㄳ", "ㄴ", "ㄵ", "ㄶ", "ㄷ", "ㄹ", "ㄺ", "ㄻ", "ㄼ", "ㄽ", "ㄾ", "ㄿ","ㅀ", "ㅁ", "ㅂ", "ㅄ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"]
-    
-    let twiceJungIndexAndValue: [(String, Int)] = [("ㅗㅏ", 9), ("ㅗㅐ", 10), ("ㅗㅣ", 11), ("ㅜㅓ", 14), ("ㅜㅔ", 15), ("ㅜㅣ", 16), ("ㅡㅣ", 19), ("ㅏㅣ", 1), ("ㅓㅣ", 5), ("ㅑㅣ", 3), ("ㅕㅣ", 7)]
-    
-    let twiceJongIndexAndValue: [(String, Int)] = [("ㄱㅅ", 3), ("ㄴㅈ", 5), ("ㄴㅎ", 6), ("ㄹㄱ", 9), ("ㄹㅁ", 10), ("ㄹㅂ", 11), ("ㄹㅅ", 12), ("ㄹㅌ", 13), ("ㄹㅍ", 14), ("ㄹㅎ", 15), ("ㅂㅅ", 18), ("ㅅㅅ", 20), ("ㄱㄱ", 2)]
-    
-    lazy var twiceJungValue = twiceJungIndexAndValue.map { $0.0 }
-    lazy var twiceJongValue = twiceJongIndexAndValue.map { $0.0 }
-}
-
 class KeyboardIOManager {
     
     // MARK: - Properties
-//    var textViewBeforeCursorCharectar = ""
+    var deleteKey = "jlk;jkl;jtoieruogjerqpioj893475982347jdgk+_+_+_+vd;ajdslfjls;djfoisduovucxoijoirhto4j9030923"
     var inputCaracter: ((String) -> Void)!
     var deleteCaracter: ((String, String, Bool) -> Void)!
+    var dismiss: (() -> Void)!
     
     // extension
     private var hangul = Hangul()
@@ -46,7 +33,6 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
     }
     
     func backKeypadTap() {
-        
         if inputQueue.count >= 2 {
             inputQueue.removeLast()
             let joinQueue = join(queue: inputQueue)
@@ -62,12 +48,12 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
             queueText = joinQueue
         } else {
             inputQueue.removeAll()
-            deleteCaracter("jlk;jkl;jtoieruogjerqpioj893475982347jdgk+_+_+_+vd;ajdslfjls;djfoisduovucxoijoirhto4j9030923", "", false)
+            deleteCaracter(deleteKey, "", false)
         }
     }
     
     func enterKeypadTap() {
-        
+        dismiss()
     }
     
     func spaceKeypadTap() {
@@ -80,7 +66,6 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
 extension KeyboardIOManager {
     /// queue에 저장된 문자들 초성, 중성, 종성으로 나누기
     func sliceInputQueue(queue: [String]) -> [[String]] {
-//        let queue = queue
         var isFlag = false
         var buffer = [String]()
         var inputListMap = [[String]]()
@@ -206,7 +191,6 @@ extension KeyboardIOManager {
             // buffer가 3개 다있을경우 초성, 중성, 종성 계산해서 조합
             if buffer.count == 3 {
                 let chosung = hangul.cho.firstIndex(of: buffer[0])!
-                print(chosung)
                 let jungsung = hangul.jung.firstIndex(of: buffer[1])!
                 let jongsung = hangul.jong.firstIndex(of: buffer[2])!
                 let joinChar = (chosung * 21 + jungsung) * 28 + jongsung + 0xAC00
@@ -234,75 +218,4 @@ extension KeyboardIOManager {
         let sliceInputQueue = sliceInputQueue(queue: queue)
         return joinHangul(inputListMap: sliceInputQueue)
     }
-    
-    /// 단어 하나를 초성, 중성, 종성으로 나누기
-//    func sliceCharacter(char: String) -> [String] {
-//        guard let uniValue = Unicode.Scalar(char)?.value else { return [] }
-//        let target = Int(uniValue) - 0xAC00
-//
-//        if target < 0 {
-//            return [char]
-//        }
-//
-//        let chosungIndex = target / (21 * 28)
-//        let jungsungIndex = target % (21 * 28) / 28
-//        let jongsungIndex = target % 28
-//
-//        let chosung = hangul.cho[chosungIndex]
-//        let jungsung = hangul.jung[jungsungIndex]
-//        let jongsung = hangul.jong[jongsungIndex]
-//
-//        var result = [String]()
-//        if jongsungIndex == 0 {
-//            result.append(chosung)
-//            if let jungIndex = hangul.jung.firstIndex(of: jungsung) {
-//                let sliceIndex = hangul.twiceJungIndexAndValue.firstIndex { _, index in
-//                     index == jungIndex
-//                }
-//                if sliceIndex != nil {
-//                    let twiceJung = Array(hangul.twiceJungValue[sliceIndex!]).map { String($0) }
-//                    result.append(contentsOf: [twiceJung[0], twiceJung[1]])
-//                } else {
-//                    result.append(jungsung)
-//                }
-//            }
-//            return result
-//        } else {
-//            result.append(chosung)
-//            if let jungIndex = hangul.jung.firstIndex(of: jungsung) {
-//                let sliceIndex = hangul.twiceJungIndexAndValue.firstIndex { _, index in
-//                     index == jungIndex
-//                }
-//                if sliceIndex != nil {
-//                    let twiceJung = Array(hangul.twiceJungValue[sliceIndex!]).map { String($0) }
-//                    result.append(contentsOf: [twiceJung[0], twiceJung[1]])
-//                } else {
-//                    result.append(jungsung)
-//                }
-//            }
-//
-//            if let jongIndex = hangul.jong.firstIndex(of: jongsung) {
-//                let sliceIndex = hangul.twiceJongIndexAndValue.firstIndex { _, index in
-//                     index == jongIndex
-//                }
-//                if sliceIndex != nil {
-//                    let twiceJong = Array(hangul.twiceJongValue[sliceIndex!]).map { String($0) }
-//                    result.append(contentsOf: [twiceJong[0], twiceJong[1]])
-//                } else {
-//                    result.append(jongsung)
-//                }
-//            }
-//            return result
-//        }
-//    }
-    
-    /// 현재 단어가 조합된 단어인지 확인
-//    func isJoinCharacter(char: String) -> Bool {
-//        guard let uniValue = Unicode.Scalar(char)?.value else { return false }
-//        if 0xAC00 <= uniValue && uniValue <= 0xD7A3 {
-//            return true
-//        } else {
-//            return false
-//        }
-//    }
 }

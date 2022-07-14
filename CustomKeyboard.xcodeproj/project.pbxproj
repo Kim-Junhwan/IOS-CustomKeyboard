@@ -10,6 +10,7 @@
 		0E20AB8B287BFCE800C60D7C /* ReviewListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E20AB8A287BFCE800C60D7C /* ReviewListViewModel.swift */; };
 		0E20AB8E287BFEDA00C60D7C /* Extension_UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E20AB8D287BFEDA00C60D7C /* Extension_UIImage.swift */; };
 		0E55485E287D3A35000F328D /* WriteReviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E55485D287D3A35000F328D /* WriteReviewViewController.swift */; };
+		0E8F2CB028802D9A005E447E /* Hangul.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E8F2CAF28802D9A005E447E /* Hangul.swift */; };
 		0EECF418287D57190094171E /* CustomKeyboardView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0EECF417287D57190094171E /* CustomKeyboardView.xib */; };
 		0EECF41A287D57230094171E /* CustomKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EECF419287D57230094171E /* CustomKeyboardView.swift */; };
 		1207F848287E4C9A00F064C3 /* KeyboardIOManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1207F847287E4C9A00F064C3 /* KeyboardIOManager.swift */; };
@@ -29,6 +30,7 @@
 		0E20AB8A287BFCE800C60D7C /* ReviewListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewListViewModel.swift; sourceTree = "<group>"; };
 		0E20AB8D287BFEDA00C60D7C /* Extension_UIImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension_UIImage.swift; sourceTree = "<group>"; };
 		0E55485D287D3A35000F328D /* WriteReviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteReviewViewController.swift; sourceTree = "<group>"; };
+		0E8F2CAF28802D9A005E447E /* Hangul.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hangul.swift; sourceTree = "<group>"; };
 		0EECF417287D57190094171E /* CustomKeyboardView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CustomKeyboardView.xib; sourceTree = "<group>"; };
 		0EECF419287D57230094171E /* CustomKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomKeyboardView.swift; sourceTree = "<group>"; };
 		1207F847287E4C9A00F064C3 /* KeyboardIOManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardIOManager.swift; sourceTree = "<group>"; };
@@ -98,7 +100,6 @@
 			children = (
 				0EECF417287D57190094171E /* CustomKeyboardView.xib */,
 				0EECF419287D57230094171E /* CustomKeyboardView.swift */,
-				1207F847287E4C9A00F064C3 /* KeyboardIOManager.swift */,
 			);
 			path = CustomKeyboardView;
 			sourceTree = "<group>";
@@ -106,6 +107,7 @@
 		C7175258287BF6890017487F /* Manager */ = {
 			isa = PBXGroup;
 			children = (
+				1207F847287E4C9A00F064C3 /* KeyboardIOManager.swift */,
 				C717525E287BF8320017487F /* NetworkManager.swift */,
 			);
 			path = Manager;
@@ -125,6 +127,7 @@
 			children = (
 				C717525C287BF7040017487F /* ReviewModel.swift */,
 				C7175264287D3D9A0017487F /* PostReviewModel.swift */,
+				0E8F2CAF28802D9A005E447E /* Hangul.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -236,6 +239,7 @@
 				0E55485E287D3A35000F328D /* WriteReviewViewController.swift in Sources */,
 				0EECF41A287D57230094171E /* CustomKeyboardView.swift in Sources */,
 				0E20AB8E287BFEDA00C60D7C /* Extension_UIImage.swift in Sources */,
+				0E8F2CB028802D9A005E447E /* Hangul.swift in Sources */,
 				12744E2E287C300700C0AD4A /* ReviewListViewController.swift in Sources */,
 				DE15E65C28604278003DD2F5 /* AppDelegate.swift in Sources */,
 				C7175265287D3D9A0017487F /* PostReviewModel.swift in Sources */,

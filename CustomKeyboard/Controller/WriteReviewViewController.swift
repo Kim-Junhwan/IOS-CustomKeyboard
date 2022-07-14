@@ -16,6 +16,8 @@ class WriteReviewViewController: UIViewController {
     // MARK: - Properties
     weak var delegate: WriteReviewViewControllerDelegate?
     let keyboardIOManager = KeyboardIOManager()
+    private var beforeCusorAfterString = ""
+    private var queueJoinText = ""
     
     // MARK: - ViewProperties
     private lazy var writeReviewTextView: UITextView = {
@@ -30,8 +32,6 @@ class WriteReviewViewController: UIViewController {
         
         return textView
     }()
-    
-    private var queueJoinText = ""
     
     // MARK: - LifeCycle
     override func viewDidLoad() {
@@ -72,7 +72,7 @@ class WriteReviewViewController: UIViewController {
         //삭제시
         keyboardIOManager.deleteCaracter = { [weak self] in
             guard let self = self else { return }
-            if $0 == "jlk;jkl;jtoieruogjerqpioj893475982347jdgk+_+_+_+vd;ajdslfjls;djfoisduovucxoijoirhto4j9030923" {
+            if $0 == self.keyboardIOManager.deleteKey {
                 self.writeReviewTextView.deleteBackward()
                 self.queueJoinText = ""
             } else {
@@ -88,18 +88,23 @@ class WriteReviewViewController: UIViewController {
                 }
             }
         }
+        
+        keyboardIOManager.dismiss = { [weak self] in
+            self?.dismiss(animated: true)
+        }
     }
     
     /// 텍스트뷰의 커서 앞의 문자 가져오기
-    private func getStringBeforeCursor() -> String {
+    private func getStringAfterCursor() -> String {
         guard let selectedRange = writeReviewTextView.selectedTextRange,
               let text = writeReviewTextView.text else { return "" }
         
         let cursorPosition = writeReviewTextView.offset(from: writeReviewTextView.beginningOfDocument, to: selectedRange.start)
         
-        let beforeCusorRange = text.index(text.startIndex, offsetBy: 0)..<text.index(text.startIndex, offsetBy: cursorPosition)
-        let beforeCusorText = text[beforeCusorRange]
-        return String(beforeCusorText)
+//        let beforeCusorRange = text.index(text.startIndex)..<text.index(text.endIndex, offsetBy: cursorPosition)
+        let afterCusorRange = text.index(text.startIndex, offsetBy: cursorPosition)..<text.index(text.endIndex, offsetBy: 0)
+        let afterCusorText = text[afterCusorRange]
+        return String(afterCusorText)
     }
 }
 
@@ -123,15 +128,12 @@ extension WriteReviewViewController {
 // MARK: - UITextViewDelegate
 extension WriteReviewViewController: UITextViewDelegate {
     func textViewDidChangeSelection(_ textView: UITextView) {
-        print("문자: ", queueJoinText)
-        print("문자 count:", queueJoinText.count)
-        if let selectedRange = textView.selectedTextRange {
-
-            let cursorPosition = textView.offset(from: textView.beginningOfDocument, to: selectedRange.start)
-
-            print("position: \(cursorPosition)")
+        if getStringAfterCursor() != beforeCusorAfterString {
+            keyboardIOManager.inputQueue.removeAll()
+            queueJoinText = ""
         }
-        print("--------")
+        
+        beforeCusorAfterString = getStringAfterCursor()
     }
 }
 
