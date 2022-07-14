@@ -24,40 +24,58 @@ struct Hangul {
 class KeyboardIOManager {
     var input: String = "" {
         didSet {
-            updateTextView(input)
+            inputCaracter(input)
         }
     }
     var text: String = ""
     
-    var updateTextView: ((String) -> Void)!
+    var inputCaracter: ((String) -> Void)!
+    var deleteCaracter: ((String) -> Void)!
     
     // extension
-    var hangul = Hangul()
-    var automataQueue = [String]()
-    var queue = ""
-//    var mFlag = false
-//    var jFlag = false
-//    var first = ""
-//    var second = ""
-    var beforeChar = ""
+    private var hangul = Hangul()
+    private var inputQueue = [String]()
+    private var sliceInputQueue = [[String]]()
     // extension
 }
 
 extension KeyboardIOManager: CustomKeyboardDelegate {
     func hangulKeypadTap(char: String) {
-        queue += char
-        print("queue: ", queue)
-        join(queue)
-        beforeChar = char
+        inputQueue.append(char)
+        print(inputQueue)
+        let joinHangul = join(queue: inputQueue)
+//        input = join(queue: inputQueue)
+        inputCaracter(joinHangul)
     }
     
     func backKeypadTap() {
+        if !inputQueue.isEmpty {
+            inputQueue.removeLast()
+        } else {
+            // Todo: 텍스트뷰 마지막 단어 받아와서 분해후 큐에 집어넣고 삭제
+        }
+        guard let lastCaracter = join(queue: inputQueue).last else { return }
+        deleteCaracter(String(lastCaracter))
+        
+//        sliceInputQueue[sliceInputQueue.count - 1].removeLast()
+//        input = joinHangul(inputListMap: sliceInputQueue)
         
     }
     
     func enterKeypadTap() {
         
     }
+    
+    /*
+     ㄱㅏㅁㅈㅏ
+     감자
+     0. 감자
+     1. 감ㅈ
+     2. 감
+     3. 가
+     4. ㄱ
+     5.
+     */
     
     func spaceKeypadTap() {
         
@@ -66,15 +84,13 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
 
 // MARK: - automata
 extension KeyboardIOManager {
-    func joinHangul(inputList: [String]) {
-        var result = ""
-        var inputListMap = [[String]]()
-        // buffer는 초성, 중성, 종성을 임시저장하는 프로퍼티
-        // count 가 한개일시 자음 혹은 모음, 두개일시 초성, 중성, 3개일시 초성, 중성, 종성
-        var buffer = [String]()
+    func sliceInputQueue(queue: [String]) -> [[String]] {
+        let queue = queue
         var isFlag = false
+        var buffer = [String]()
+        var inputListMap = [[String]]()
         
-        for (index, input) in inputList.enumerated() {
+        for (index, input) in queue.enumerated() {
             if isFlag { isFlag = false; continue }
             // buffer가 비었을경우
             if buffer.isEmpty {
@@ -89,9 +105,9 @@ extension KeyboardIOManager {
                        hangul.cho.contains(inputListMap.last!.last!) {
                         let chosung = inputListMap[inputListMap.count - 1].removeLast()
                         buffer.append(chosung)
-                        if index < inputList.count - 1 &&
-                            hangul.twiceJungValue.contains(input + inputList[index + 1]) {
-                            let target = input + inputList[index + 1]
+                        if index < queue.count - 1 &&
+                            hangul.twiceJungValue.contains(input + queue[index + 1]) {
+                            let target = input + queue[index + 1]
                             let targetIndex = hangul.twiceJungValue.firstIndex(of: target)!
                             buffer.append(hangul.jung[hangul.twiceJungIndexAndValue[targetIndex].1])
                             isFlag = true
@@ -101,13 +117,13 @@ extension KeyboardIOManager {
                     } else if !inputListMap.isEmpty,
                               hangul.jong.contains(inputListMap.last!.last!) {
                         inputListMap[inputListMap.count - 1].removeLast()
-                        inputListMap[inputListMap.count - 1].append(inputList[index - 2])
-                        buffer.append(inputList[index - 1])
+                        inputListMap[inputListMap.count - 1].append(queue[index - 2])
+                        buffer.append(queue[index - 1])
                         buffer.append(input)
                     } else {
-                        if index < inputList.count - 1 &&
-                            hangul.twiceJungValue.contains(input + inputList[index + 1]) {
-                            let target = input + inputList[index + 1]
+                        if index < queue.count - 1 &&
+                            hangul.twiceJungValue.contains(input + queue[index + 1]) {
+                            let target = input + queue[index + 1]
                             let targetIndex = hangul.twiceJungValue.firstIndex(of: target)!
                             buffer.append(hangul.jung[hangul.twiceJungIndexAndValue[targetIndex].1])
                             isFlag = true
@@ -122,9 +138,9 @@ extension KeyboardIOManager {
                 if hangul.cho.contains(buffer[0]),
                    hangul.jung.contains(input) {
                     
-                    if index < inputList.count - 1 &&
-                        hangul.twiceJungValue.contains(input + inputList[index + 1]) {
-                        let target = input + inputList[index + 1]
+                    if index < queue.count - 1 &&
+                        hangul.twiceJungValue.contains(input + queue[index + 1]) {
+                        let target = input + queue[index + 1]
                         print(target)
                         let targetIndex = hangul.twiceJungValue.firstIndex(of: target)!
                         buffer.append(hangul.jung[hangul.twiceJungIndexAndValue[targetIndex].1])
@@ -152,10 +168,10 @@ extension KeyboardIOManager {
             } else if buffer.count == 2 {
                 if hangul.jung.contains(buffer[1]),
                    hangul.jong.contains(input) {
-                    if index < inputList.count - 1 &&
-                        hangul.twiceJongValue.contains(input + inputList[index + 1]) {
+                    if index < queue.count - 1 &&
+                        hangul.twiceJongValue.contains(input + queue[index + 1]) {
                         //                    buffer.removeLast()
-                        let target = input + inputList[index + 1]
+                        let target = input + queue[index + 1]
                         let targetIndex = hangul.twiceJongValue.firstIndex(of: target)!
                         buffer.append(hangul.jong[hangul.twiceJongIndexAndValue[targetIndex].1])
                         isFlag = true
@@ -178,6 +194,15 @@ extension KeyboardIOManager {
         }
         // 혹시 buffer에 데이터가 남아있을경우 inputListMap에 append
         if !buffer.isEmpty { inputListMap.append(buffer) }
+        print(inputListMap)
+        self.sliceInputQueue = inputListMap
+        return inputListMap
+    }
+    
+    
+    func joinHangul(inputListMap: [[String]]) -> String {
+        var result = ""
+        
         // 조합
         inputListMap.forEach { buffer in
             // buffer가 3개 다있을경우 초성, 중성, 종성 계산해서 조합
@@ -202,13 +227,13 @@ extension KeyboardIOManager {
                 result += buffer.first!
             }
         }
-        
-        print(inputListMap)
-        input = String(result)
+        print(result)
+//        input = result
+        return result
     }
 
-    func join(_ str: String) {
-        let arr = Array(str).map { String($0) }
-        joinHangul(inputList: arr)
+    func join(queue: [String]) -> String {
+        let sliceInputQueue = sliceInputQueue(queue: queue)
+        return joinHangul(inputListMap: sliceInputQueue)
     }
 }

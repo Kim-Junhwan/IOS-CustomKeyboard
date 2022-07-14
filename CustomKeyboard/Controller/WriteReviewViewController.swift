@@ -34,15 +34,39 @@ class WriteReviewViewController: UIViewController {
     // MARK: - LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        keyboardIOManager.updateTextView = { [weak self] in
-//            self?.writeReviewTextView.insertText($0)
-            self?.writeReviewTextView.text = $0
-            print("before cusor: ", self?.characterBeforeCursor())
-            self?.writeReviewTextView.insertText($0)
-        }
+        bindingKeyboardIOManager()
         view.backgroundColor = .systemBackground
         configureSubViews()
         setConstraintsOfWriteReviewTextView()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        delegate?.sendReviewMessage(review: writeReviewTextView.text)
+    }
+    
+    // MARK: - Method
+    func bindingKeyboardIOManager() {
+        // 입력시
+        keyboardIOManager.inputCaracter = { [weak self] in
+            guard let self = self else { return }
+            let outputCount = $0.count
+            (0..<outputCount).forEach { _ in
+                if !self.writeReviewTextView.text.isEmpty {
+                    self.writeReviewTextView.text.removeLast()
+                }
+            }
+            self.writeReviewTextView.insertText($0)
+        }
+        
+        //삭제시
+        keyboardIOManager.deleteCaracter = { [weak self] in
+            guard let self = self else { return }
+            if !self.writeReviewTextView.text.isEmpty {
+                self.writeReviewTextView.text.removeLast()
+            }
+            self.writeReviewTextView.insertText($0)
+        }
     }
     
     /// 텍스트뷰의 커서 앞의 문자 가져오기
@@ -54,11 +78,6 @@ class WriteReviewViewController: UIViewController {
             }
         }
         return nil
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        delegate?.sendReviewMessage(review: writeReviewTextView.text)
     }
 }
 
