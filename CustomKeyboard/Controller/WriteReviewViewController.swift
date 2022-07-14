@@ -35,6 +35,7 @@ class WriteReviewViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         bindingKeyboardIOManager()
+        writeReviewTextView.delegate = self
         view.backgroundColor = .systemBackground
         configureSubViews()
         setConstraintsOfWriteReviewTextView()
@@ -53,7 +54,7 @@ class WriteReviewViewController: UIViewController {
             let outputCount = $0.count
             (0..<outputCount).forEach { _ in
                 if !self.writeReviewTextView.text.isEmpty {
-                    self.writeReviewTextView.text.removeLast()
+                    self.writeReviewTextView.deleteBackward()
                 }
             }
             self.writeReviewTextView.insertText($0)
@@ -62,10 +63,15 @@ class WriteReviewViewController: UIViewController {
         //삭제시
         keyboardIOManager.deleteCaracter = { [weak self] in
             guard let self = self else { return }
+            
             if !self.writeReviewTextView.text.isEmpty {
-                self.writeReviewTextView.text.removeLast()
+                if $0 == "" {
+                    self.writeReviewTextView.deleteBackward()
+                } else {
+                    self.writeReviewTextView.text.removeLast()
+                    self.writeReviewTextView.insertText($0)
+                }
             }
-            self.writeReviewTextView.insertText($0)
         }
     }
     
@@ -95,5 +101,12 @@ extension WriteReviewViewController {
             writeReviewTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -15),
             writeReviewTextView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -15)
         ])
+    }
+}
+
+extension WriteReviewViewController: UITextViewDelegate {
+    func textViewDidChange(_ textView: UITextView) {
+        guard let beforeCursorCharacter = characterBeforeCursor() else { return }
+        keyboardIOManager.textViewBeforeCursorCharectar = beforeCursorCharacter
     }
 }
