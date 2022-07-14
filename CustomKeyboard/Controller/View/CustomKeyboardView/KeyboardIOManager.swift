@@ -60,7 +60,8 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
     }
     
     func spaceKeypadTap() {
-        
+        inputQueue.removeAll()
+        inputCaracter(" ")
     }
 }
 
@@ -68,7 +69,7 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
 extension KeyboardIOManager {
     /// queue에 저장된 문자들 초성, 중성, 종성으로 나누기
     func sliceInputQueue(queue: [String]) -> [[String]] {
-        let queue = queue
+//        let queue = queue
         var isFlag = false
         var buffer = [String]()
         var inputListMap = [[String]]()

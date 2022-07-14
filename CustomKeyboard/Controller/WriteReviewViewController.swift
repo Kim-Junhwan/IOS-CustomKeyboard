@@ -51,10 +51,13 @@ class WriteReviewViewController: UIViewController {
         // 입력시
         keyboardIOManager.inputCaracter = { [weak self] in
             guard let self = self else { return }
-            let outputCount = $0.count
-            (0..<outputCount).forEach { _ in
-                if !self.writeReviewTextView.text.isEmpty {
-                    self.writeReviewTextView.deleteBackward()
+            if $0 != " " {
+                guard let outputCount = self.writeReviewTextView.text
+                    .components(separatedBy: " ").last?.count else { return }
+                (0..<outputCount).forEach { _ in
+                    if !self.writeReviewTextView.text.isEmpty {
+                        self.writeReviewTextView.deleteBackward()
+                    }
                 }
             }
             self.writeReviewTextView.insertText($0)
