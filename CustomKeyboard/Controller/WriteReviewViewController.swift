@@ -22,6 +22,7 @@ class WriteReviewViewController: UIViewController {
         let textView = UITextView()
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 1
+        textView.font = UIFont.systemFont(ofSize: 20)
         guard let loadNib = Bundle.main.loadNibNamed("CustomKeyboardView", owner: nil)?.first as? CustomKeyboardView else { return textView}
         loadNib.delegate = keyboardIOManager
         textView.inputView = loadNib
@@ -29,7 +30,8 @@ class WriteReviewViewController: UIViewController {
         
         return textView
     }()
-    private var keyboardViewHeight: CGFloat?
+    
+    private var queueJoinText = ""
     
     // MARK: - LifeCycle
     override func viewDidLoad() {
@@ -51,43 +53,57 @@ class WriteReviewViewController: UIViewController {
         // 입력시
         keyboardIOManager.inputCaracter = { [weak self] in
             guard let self = self else { return }
-            if $0 != " " {
-                guard let outputCount = self.writeReviewTextView.text
-                    .components(separatedBy: " ").last?.count else { return }
-                (0..<outputCount).forEach { _ in
+            print("input: ", $0)
+            print("input queuejoined: ", self.queueJoinText)
+            if $0 == " " {
+                // space바 입력시
+                self.queueJoinText.removeAll()
+            } else {
+                // 한글 입력시
+                let currentQueueCount = self.queueJoinText.count
+                (0..<currentQueueCount).forEach { _ in
                     if !self.writeReviewTextView.text.isEmpty {
                         self.writeReviewTextView.deleteBackward()
                     }
                 }
             }
             self.writeReviewTextView.insertText($0)
+            self.queueJoinText = $0
         }
         
         //삭제시
         keyboardIOManager.deleteCaracter = { [weak self] in
             guard let self = self else { return }
-            
-            if !self.writeReviewTextView.text.isEmpty {
-                if $1 {
-                    self.writeReviewTextView.deleteBackward()
-                } else {
-                    self.writeReviewTextView.deleteBackward()
-                    self.writeReviewTextView.deleteBackward()
+            print("delete: ", $0)
+            print("delete queuejoin: ", self.queueJoinText)
+            if $0 == "jlk;jkl;jtoieruogjerqpioj893475982347jdgk+_+_+_+vd;ajdslfjls;djfoisduovucxoijoirhto4j9030923" {
+                self.writeReviewTextView.deleteBackward()
+                self.queueJoinText = ""
+            } else {
+                if !self.writeReviewTextView.text.isEmpty {
+                    if $2 {
+                        self.writeReviewTextView.deleteBackward()
+                    } else {
+                        self.writeReviewTextView.deleteBackward()
+                        self.writeReviewTextView.deleteBackward()
+                    }
+                    self.writeReviewTextView.insertText($0)
+                    self.queueJoinText = $1
                 }
-                self.writeReviewTextView.insertText($0)
             }
         }
     }
     
     /// 텍스트뷰의 커서 앞의 문자 가져오기
-    func characterBeforeCursor() -> String? {
-        if let cursorRange = writeReviewTextView.selectedTextRange {
-            if let newPosition = writeReviewTextView.position(from: cursorRange.start, offset: -1) {
-                let range = writeReviewTextView.textRange(from: newPosition, to: cursorRange.start)
-                return writeReviewTextView.text(in: range!)
-            }
-        }
-        return nil
+    private func getStringBeforeCursor() -> String {
+        guard let selectedRange = writeReviewTextView.selectedTextRange,
+              let text = writeReviewTextView.text else { return "" }
+        
+        let cursorPosition = writeReviewTextView.offset(from: writeReviewTextView.beginningOfDocument, to: selectedRange.start)
+        
+        let beforeCusorRange = text.index(text.startIndex, offsetBy: 0)..<text.index(text.startIndex, offsetBy: cursorPosition)
+        let beforeCusorText = text[beforeCusorRange]
+        return String(beforeCusorText)
     }
 }
 
@@ -108,9 +124,17 @@ extension WriteReviewViewController {
     }
 }
 
+// MARK: - UITextViewDelegate
 extension WriteReviewViewController: UITextViewDelegate {
-    func textViewDidChange(_ textView: UITextView) {
-//        guard let beforeCursorCharacter = characterBeforeCursor() else { return }
-//        keyboardIOManager.textViewBeforeCursorCharectar = beforeCursorCharacter
+    func textViewDidChangeSelection(_ textView: UITextView) {
+//        if beforeCusorText != getStringBeforeCursor() {
+//            keyboardIOManager.inputQueue.removeAll()
+//            print("move Cursor")
+//        }
+//
+//        print("moveCursor")
+//
+//
     }
 }
+

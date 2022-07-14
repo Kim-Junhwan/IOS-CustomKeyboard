@@ -13,9 +13,9 @@ struct Hangul {
     let jung:[String] = ["ㅏ", "ㅐ", "ㅑ", "ㅒ", "ㅓ", "ㅔ", "ㅕ", "ㅖ", "ㅗ", "ㅘ", "ㅙ", "ㅚ", "ㅛ", "ㅜ", "ㅝ","ㅞ", "ㅟ", "ㅠ", "ㅡ", "ㅢ", "ㅣ"]
     let jong:[String] = [" ", "ㄱ", "ㄲ", "ㄳ", "ㄴ", "ㄵ", "ㄶ", "ㄷ", "ㄹ", "ㄺ", "ㄻ", "ㄼ", "ㄽ", "ㄾ", "ㄿ","ㅀ", "ㅁ", "ㅂ", "ㅄ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"]
     
-    let twiceJungIndexAndValue: [(String, Int)] = [("ㅗㅏ", 9), ("ㅗㅐ", 10), ("ㅗㅣ", 11), ("ㅜㅓ", 14), ("ㅜㅔ", 15), ("ㅜㅣ", 16), ("ㅡㅣ", 19)]
+    let twiceJungIndexAndValue: [(String, Int)] = [("ㅗㅏ", 9), ("ㅗㅐ", 10), ("ㅗㅣ", 11), ("ㅜㅓ", 14), ("ㅜㅔ", 15), ("ㅜㅣ", 16), ("ㅡㅣ", 19), ("ㅏㅣ", 1), ("ㅓㅣ", 5), ("ㅑㅣ", 3), ("ㅕㅣ", 7)]
     
-    let twiceJongIndexAndValue: [(String, Int)] = [("ㄱㅅ", 3), ("ㄴㅈ", 5), ("ㄴㅎ", 6), ("ㄹㄱ", 9), ("ㄹㅁ", 10), ("ㄹㅂ", 11), ("ㄹㅅ", 12), ("ㄹㅌ", 13), ("ㄹㅍ", 14), ("ㄹㅎ", 15), ("ㅂㅅ", 18), ("ㅅㅅ", 20)]
+    let twiceJongIndexAndValue: [(String, Int)] = [("ㄱㅅ", 3), ("ㄴㅈ", 5), ("ㄴㅎ", 6), ("ㄹㄱ", 9), ("ㄹㅁ", 10), ("ㄹㅂ", 11), ("ㄹㅅ", 12), ("ㄹㅌ", 13), ("ㄹㅍ", 14), ("ㄹㅎ", 15), ("ㅂㅅ", 18), ("ㅅㅅ", 20), ("ㄱㄱ", 2)]
     
     lazy var twiceJungValue = twiceJungIndexAndValue.map { $0.0 }
     lazy var twiceJongValue = twiceJongIndexAndValue.map { $0.0 }
@@ -26,11 +26,11 @@ class KeyboardIOManager {
     // MARK: - Properties
 //    var textViewBeforeCursorCharectar = ""
     var inputCaracter: ((String) -> Void)!
-    var deleteCaracter: ((String, Bool) -> Void)!
+    var deleteCaracter: ((String, String, Bool) -> Void)!
     
     // extension
     private var hangul = Hangul()
-    private var inputQueue = [String]()
+    var inputQueue = [String]()
     private var queueText = ""
     private var sliceInputQueue = [[String]]()
     // extension
@@ -46,28 +46,23 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
     }
     
     func backKeypadTap() {
-//        inputQueue = sliceCharacter(char: textViewBeforeCursorCharectar)
-        if !inputQueue.isEmpty {
+        
+        if inputQueue.count >= 2 {
             inputQueue.removeLast()
             let joinQueue = join(queue: inputQueue)
             guard let lastCaracter = joinQueue.last else {
-                deleteCaracter("", false)
+                deleteCaracter("", "", false)
                 return
             }
-            print("lastCaracter: ", lastCaracter)
-//            if isJoinCharacter(char: String(lastCaracter)) {
-//                deleteCaracter(String(lastCaracter), true)
-//            } else {
-//                deleteCaracter(String(lastCaracter), false)
-//            }
             if joinQueue.count == queueText.count {
-                deleteCaracter(String(lastCaracter), true)
+                deleteCaracter(String(lastCaracter), joinQueue, true)
             } else {
-                deleteCaracter(String(lastCaracter), false)
+                deleteCaracter(String(lastCaracter), joinQueue, false)
             }
             queueText = joinQueue
         } else {
-            deleteCaracter("jlk;jkl;jtoieruogjerqpiojewoiur34ur8ugiofhjdgkvd;ajdslfjls;djfoisduovucxoijoirhto4j9030923", false)
+            inputQueue.removeAll()
+            deleteCaracter("jlk;jkl;jtoieruogjerqpioj893475982347jdgk+_+_+_+vd;ajdslfjls;djfoisduovucxoijoirhto4j9030923", "", false)
         }
     }
     
@@ -76,7 +71,7 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
     }
     
     func spaceKeypadTap() {
-        inputQueue.removeAll()
+        inputQueue = [" "]
         inputCaracter(" ")
     }
 }
