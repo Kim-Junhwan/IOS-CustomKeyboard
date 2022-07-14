@@ -24,13 +24,14 @@ struct Hangul {
 class KeyboardIOManager {
     
     // MARK: - Properties
-    var textViewBeforeCursorCharectar = ""
+//    var textViewBeforeCursorCharectar = ""
     var inputCaracter: ((String) -> Void)!
-    var deleteCaracter: ((String) -> Void)!
+    var deleteCaracter: ((String, Bool) -> Void)!
     
     // extension
     private var hangul = Hangul()
     private var inputQueue = [String]()
+    private var queueText = ""
     private var sliceInputQueue = [[String]]()
     // extension
 }
@@ -40,19 +41,34 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
     func hangulKeypadTap(char: String) {
         inputQueue.append(char)
         let joinHangul = join(queue: inputQueue)
+        queueText = joinHangul
         inputCaracter(joinHangul)
     }
     
     func backKeypadTap() {
-        inputQueue = sliceCharacter(char: textViewBeforeCursorCharectar)
+//        inputQueue = sliceCharacter(char: textViewBeforeCursorCharectar)
         if !inputQueue.isEmpty {
             inputQueue.removeLast()
+            let joinQueue = join(queue: inputQueue)
+            guard let lastCaracter = joinQueue.last else {
+                deleteCaracter("", false)
+                return
+            }
+            print("lastCaracter: ", lastCaracter)
+//            if isJoinCharacter(char: String(lastCaracter)) {
+//                deleteCaracter(String(lastCaracter), true)
+//            } else {
+//                deleteCaracter(String(lastCaracter), false)
+//            }
+            if joinQueue.count == queueText.count {
+                deleteCaracter(String(lastCaracter), true)
+            } else {
+                deleteCaracter(String(lastCaracter), false)
+            }
+            queueText = joinQueue
+        } else {
+            deleteCaracter("jlk;jkl;jtoieruogjerqpiojewoiur34ur8ugiofhjdgkvd;ajdslfjls;djfoisduovucxoijoirhto4j9030923", false)
         }
-        guard let lastCaracter = join(queue: inputQueue).last else {
-            deleteCaracter("")
-            return
-        }
-        deleteCaracter(String(lastCaracter))
     }
     
     func enterKeypadTap() {
@@ -125,7 +141,6 @@ extension KeyboardIOManager {
                     if index < queue.count - 1 &&
                         hangul.twiceJungValue.contains(input + queue[index + 1]) {
                         let target = input + queue[index + 1]
-                        print(target)
                         let targetIndex = hangul.twiceJungValue.firstIndex(of: target)!
                         buffer.append(hangul.jung[hangul.twiceJungIndexAndValue[targetIndex].1])
                         isFlag = true
@@ -178,8 +193,6 @@ extension KeyboardIOManager {
         }
         // 혹시 buffer에 데이터가 남아있을경우 inputListMap에 append
         if !buffer.isEmpty { inputListMap.append(buffer) }
-        print(inputListMap)
-        //        self.sliceInputQueue = inputListMap
         return inputListMap
     }
     
@@ -211,8 +224,6 @@ extension KeyboardIOManager {
                 result += buffer.first!
             }
         }
-        print(result)
-        //        input = result
         return result
     }
     
@@ -223,63 +234,73 @@ extension KeyboardIOManager {
     }
     
     /// 단어 하나를 초성, 중성, 종성으로 나누기
-    func sliceCharacter(char: String) -> [String] {
-        guard let uniValue = Unicode.Scalar(char)?.value else { return [] }
-        let target = Int(uniValue) - 0xAC00
-        
-        if target < 0 {
-            return [char]
-        }
-        
-        let chosungIndex = target / (21 * 28)
-        let jungsungIndex = target % (21 * 28) / 28
-        let jongsungIndex = target % 28
-        
-        let chosung = hangul.cho[chosungIndex]
-        let jungsung = hangul.jung[jungsungIndex]
-        let jongsung = hangul.jong[jongsungIndex]
-        
-        var result = [String]()
-        if jongsungIndex == 0 {
-            result.append(chosung)
-            if let jungIndex = hangul.jung.firstIndex(of: jungsung) {
-                let sliceIndex = hangul.twiceJungIndexAndValue.firstIndex { _, index in
-                     index == jungIndex
-                }
-                if sliceIndex != nil {
-                    let twiceJung = Array(hangul.twiceJungValue[sliceIndex!]).map { String($0) }
-                    result.append(contentsOf: [twiceJung[0], twiceJung[1]])
-                } else {
-                    result.append(jungsung)
-                }
-            }
-            return result
-        } else {
-            result.append(chosung)
-            if let jungIndex = hangul.jung.firstIndex(of: jungsung) {
-                let sliceIndex = hangul.twiceJungIndexAndValue.firstIndex { _, index in
-                     index == jungIndex
-                }
-                if sliceIndex != nil {
-                    let twiceJung = Array(hangul.twiceJungValue[sliceIndex!]).map { String($0) }
-                    result.append(contentsOf: [twiceJung[0], twiceJung[1]])
-                } else {
-                    result.append(jungsung)
-                }
-            }
-            
-            if let jongIndex = hangul.jong.firstIndex(of: jongsung) {
-                let sliceIndex = hangul.twiceJongIndexAndValue.firstIndex { _, index in
-                     index == jongIndex
-                }
-                if sliceIndex != nil {
-                    let twiceJong = Array(hangul.twiceJongValue[sliceIndex!]).map { String($0) }
-                    result.append(contentsOf: [twiceJong[0], twiceJong[1]])
-                } else {
-                    result.append(jongsung)
-                }
-            }
-            return result
-        }
-    }
+//    func sliceCharacter(char: String) -> [String] {
+//        guard let uniValue = Unicode.Scalar(char)?.value else { return [] }
+//        let target = Int(uniValue) - 0xAC00
+//
+//        if target < 0 {
+//            return [char]
+//        }
+//
+//        let chosungIndex = target / (21 * 28)
+//        let jungsungIndex = target % (21 * 28) / 28
+//        let jongsungIndex = target % 28
+//
+//        let chosung = hangul.cho[chosungIndex]
+//        let jungsung = hangul.jung[jungsungIndex]
+//        let jongsung = hangul.jong[jongsungIndex]
+//
+//        var result = [String]()
+//        if jongsungIndex == 0 {
+//            result.append(chosung)
+//            if let jungIndex = hangul.jung.firstIndex(of: jungsung) {
+//                let sliceIndex = hangul.twiceJungIndexAndValue.firstIndex { _, index in
+//                     index == jungIndex
+//                }
+//                if sliceIndex != nil {
+//                    let twiceJung = Array(hangul.twiceJungValue[sliceIndex!]).map { String($0) }
+//                    result.append(contentsOf: [twiceJung[0], twiceJung[1]])
+//                } else {
+//                    result.append(jungsung)
+//                }
+//            }
+//            return result
+//        } else {
+//            result.append(chosung)
+//            if let jungIndex = hangul.jung.firstIndex(of: jungsung) {
+//                let sliceIndex = hangul.twiceJungIndexAndValue.firstIndex { _, index in
+//                     index == jungIndex
+//                }
+//                if sliceIndex != nil {
+//                    let twiceJung = Array(hangul.twiceJungValue[sliceIndex!]).map { String($0) }
+//                    result.append(contentsOf: [twiceJung[0], twiceJung[1]])
+//                } else {
+//                    result.append(jungsung)
+//                }
+//            }
+//
+//            if let jongIndex = hangul.jong.firstIndex(of: jongsung) {
+//                let sliceIndex = hangul.twiceJongIndexAndValue.firstIndex { _, index in
+//                     index == jongIndex
+//                }
+//                if sliceIndex != nil {
+//                    let twiceJong = Array(hangul.twiceJongValue[sliceIndex!]).map { String($0) }
+//                    result.append(contentsOf: [twiceJong[0], twiceJong[1]])
+//                } else {
+//                    result.append(jongsung)
+//                }
+//            }
+//            return result
+//        }
+//    }
+    
+    /// 현재 단어가 조합된 단어인지 확인
+//    func isJoinCharacter(char: String) -> Bool {
+//        guard let uniValue = Unicode.Scalar(char)?.value else { return false }
+//        if 0xAC00 <= uniValue && uniValue <= 0xD7A3 {
+//            return true
+//        } else {
+//            return false
+//        }
+//    }
 }

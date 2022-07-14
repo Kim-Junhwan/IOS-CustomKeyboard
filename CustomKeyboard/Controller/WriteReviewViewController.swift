@@ -68,12 +68,13 @@ class WriteReviewViewController: UIViewController {
             guard let self = self else { return }
             
             if !self.writeReviewTextView.text.isEmpty {
-                if $0 == "" {
+                if $1 {
                     self.writeReviewTextView.deleteBackward()
                 } else {
-                    self.writeReviewTextView.text.removeLast()
-                    self.writeReviewTextView.insertText($0)
+                    self.writeReviewTextView.deleteBackward()
+                    self.writeReviewTextView.deleteBackward()
                 }
+                self.writeReviewTextView.insertText($0)
             }
         }
     }
@@ -109,7 +110,7 @@ extension WriteReviewViewController {
 
 extension WriteReviewViewController: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
-        guard let beforeCursorCharacter = characterBeforeCursor() else { return }
-        keyboardIOManager.textViewBeforeCursorCharectar = beforeCursorCharacter
+//        guard let beforeCursorCharacter = characterBeforeCursor() else { return }
+//        keyboardIOManager.textViewBeforeCursorCharectar = beforeCursorCharacter
     }
 }
