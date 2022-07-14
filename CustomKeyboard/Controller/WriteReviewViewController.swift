@@ -53,8 +53,6 @@ class WriteReviewViewController: UIViewController {
         // 입력시
         keyboardIOManager.inputCaracter = { [weak self] in
             guard let self = self else { return }
-            print("input: ", $0)
-            print("input queuejoined: ", self.queueJoinText)
             if $0 == " " {
                 // space바 입력시
                 self.queueJoinText.removeAll()
@@ -67,15 +65,13 @@ class WriteReviewViewController: UIViewController {
                     }
                 }
             }
-            self.writeReviewTextView.insertText($0)
             self.queueJoinText = $0
+            self.writeReviewTextView.insertText($0)
         }
         
         //삭제시
         keyboardIOManager.deleteCaracter = { [weak self] in
             guard let self = self else { return }
-            print("delete: ", $0)
-            print("delete queuejoin: ", self.queueJoinText)
             if $0 == "jlk;jkl;jtoieruogjerqpioj893475982347jdgk+_+_+_+vd;ajdslfjls;djfoisduovucxoijoirhto4j9030923" {
                 self.writeReviewTextView.deleteBackward()
                 self.queueJoinText = ""
@@ -127,14 +123,15 @@ extension WriteReviewViewController {
 // MARK: - UITextViewDelegate
 extension WriteReviewViewController: UITextViewDelegate {
     func textViewDidChangeSelection(_ textView: UITextView) {
-//        if beforeCusorText != getStringBeforeCursor() {
-//            keyboardIOManager.inputQueue.removeAll()
-//            print("move Cursor")
-//        }
-//
-//        print("moveCursor")
-//
-//
+        print("문자: ", queueJoinText)
+        print("문자 count:", queueJoinText.count)
+        if let selectedRange = textView.selectedTextRange {
+
+            let cursorPosition = textView.offset(from: textView.beginningOfDocument, to: selectedRange.start)
+
+            print("position: \(cursorPosition)")
+        }
+        print("--------")
     }
 }
 

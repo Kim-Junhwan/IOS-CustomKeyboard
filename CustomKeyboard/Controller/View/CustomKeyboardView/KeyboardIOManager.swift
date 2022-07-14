@@ -109,6 +109,8 @@ extension KeyboardIOManager {
                         } else {
                             buffer.append(input)
                         }
+                        // inputListMap이 비지 않았고 마지막 원소가 ㄹㄱ <- 이런식일때
+                        // 앞에꺼는 종성으로 냅두고 뒤에거는 버퍼의 스택으로 append 하고 input도 버퍼에 append
                     } else if !inputListMap.isEmpty,
                               hangul.jong.contains(inputListMap.last!.last!) {
                         inputListMap[inputListMap.count - 1].removeLast()
@@ -116,6 +118,8 @@ extension KeyboardIOManager {
                         buffer.append(queue[index - 1])
                         buffer.append(input)
                     } else {
+                        // queue의 마지막 인덱스가 아니고 중성이 twiceJung에 해당될때
+                        // 조합해서 buffer에 append
                         if index < queue.count - 1 &&
                             hangul.twiceJungValue.contains(input + queue[index + 1]) {
                             let target = input + queue[index + 1]
@@ -132,7 +136,8 @@ extension KeyboardIOManager {
             } else if buffer.count == 1 {
                 if hangul.cho.contains(buffer[0]),
                    hangul.jung.contains(input) {
-                    
+                    // queue의 마지막 인덱스가 아니고 중성이 twiceJung에 해당될때
+                    // 조합해서 buffer에 append
                     if index < queue.count - 1 &&
                         hangul.twiceJungValue.contains(input + queue[index + 1]) {
                         let target = input + queue[index + 1]
@@ -144,7 +149,8 @@ extension KeyboardIOManager {
                         buffer.append(input)
                     }
                     continue
-                    // 아닐경우
+                    // queue의 마지막 인덱스가 아니고 중성이 twiceJung에 해당될때
+                    // 조합해서 buffer에 append
                 } else if hangul.twiceJungValue.contains(buffer.last! + input) {
                     let target = buffer.removeLast() + input
                     let targetIndex = hangul.twiceJungValue.firstIndex(of: target)!
@@ -200,6 +206,7 @@ extension KeyboardIOManager {
             // buffer가 3개 다있을경우 초성, 중성, 종성 계산해서 조합
             if buffer.count == 3 {
                 let chosung = hangul.cho.firstIndex(of: buffer[0])!
+                print(chosung)
                 let jungsung = hangul.jung.firstIndex(of: buffer[1])!
                 let jongsung = hangul.jong.firstIndex(of: buffer[2])!
                 let joinChar = (chosung * 21 + jungsung) * 28 + jongsung + 0xAC00
