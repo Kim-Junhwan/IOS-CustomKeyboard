@@ -7,6 +7,10 @@
 
 import Foundation
 
+enum HangulState {
+    case start, cho, jung, jong
+}
+
 class KeyboardIOManager {
     
     // MARK: - Properties
@@ -66,119 +70,33 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
 extension KeyboardIOManager {
     /// queue에 저장된 문자들 초성, 중성, 종성으로 나누기
     func sliceInputQueue(queue: [String]) -> [[String]] {
-        var isFlag = false
-        var buffer = [String]()
         var inputListMap = [[String]]()
+        var state = HangulState.start
+        let lastIndex = queue.count - 1
+        var buffer = [String]()
+        var flag = false
         
         for (index, input) in queue.enumerated() {
-            if isFlag { isFlag = false; continue }
-            // buffer가 비었을경우
-            if buffer.isEmpty {
-                // input이 cho 일시 input을 buffer.append
-                if hangul.cho.contains(input) {
-                    buffer.append(input)
-                } else {
-                    // inputListMap이 비지 않았고 마지막의 마지막 원소가 cho인데
-                    // input이 jung일때 inputListMap의 마지막의 마지막 원소를 빼서
-                    // buffer 에 append 하고 input도 append
-                    if !inputListMap.isEmpty,
-                       hangul.cho.contains(inputListMap.last!.last!) {
-                        let chosung = inputListMap[inputListMap.count - 1].removeLast()
-                        buffer.append(chosung)
-                        if index < queue.count - 1 &&
-                            hangul.twiceJungValue.contains(input + queue[index + 1]) {
-                            let target = input + queue[index + 1]
-                            let targetIndex = hangul.twiceJungValue.firstIndex(of: target)!
-                            buffer.append(hangul.jung[hangul.twiceJungIndexAndValue[targetIndex].1])
-                            isFlag = true
-                        } else {
-                            buffer.append(input)
-                        }
-                        // inputListMap이 비지 않았고 마지막 원소가 ㄹㄱ <- 이런식일때
-                        // 앞에꺼는 종성으로 냅두고 뒤에거는 버퍼의 스택으로 append 하고 input도 버퍼에 append
-                    } else if !inputListMap.isEmpty,
-                              hangul.jong.contains(inputListMap.last!.last!) {
-                        inputListMap[inputListMap.count - 1].removeLast()
-                        inputListMap[inputListMap.count - 1].append(queue[index - 2])
-                        buffer.append(queue[index - 1])
-                        buffer.append(input)
-                    } else {
-                        // queue의 마지막 인덱스가 아니고 중성이 twiceJung에 해당될때
-                        // 조합해서 buffer에 append
-                        if index < queue.count - 1 &&
-                            hangul.twiceJungValue.contains(input + queue[index + 1]) {
-                            let target = input + queue[index + 1]
-                            let targetIndex = hangul.twiceJungValue.firstIndex(of: target)!
-                            buffer.append(hangul.jung[hangul.twiceJungIndexAndValue[targetIndex].1])
-                            isFlag = true
-                        } else {
-                            buffer.append(input)
-                        }
-                    }
-                }
-                continue
-                // buffer가 한개 차있을경우 그리고 그 버퍼가 cho이면서 input이 jung일경우
-            } else if buffer.count == 1 {
-                if hangul.cho.contains(buffer[0]),
-                   hangul.jung.contains(input) {
-                    // queue의 마지막 인덱스가 아니고 중성이 twiceJung에 해당될때
-                    // 조합해서 buffer에 append
-                    if index < queue.count - 1 &&
-                        hangul.twiceJungValue.contains(input + queue[index + 1]) {
-                        let target = input + queue[index + 1]
-                        let targetIndex = hangul.twiceJungValue.firstIndex(of: target)!
-                        buffer.append(hangul.jung[hangul.twiceJungIndexAndValue[targetIndex].1])
-                        isFlag = true
-                    } else {
-                        // buffer에 input append
-                        buffer.append(input)
-                    }
-                    continue
-                    // queue의 마지막 인덱스가 아니고 중성이 twiceJung에 해당될때
-                    // 조합해서 buffer에 append
-                } else if hangul.twiceJungValue.contains(buffer.last! + input) {
-                    let target = buffer.removeLast() + input
-                    let targetIndex = hangul.twiceJungValue.firstIndex(of: target)!
-                    buffer.append(hangul.jung[hangul.twiceJungIndexAndValue[targetIndex].1])
-                    isFlag = true
-                    continue
-                } else {
-                    // buffer를 inputListMap에 append 한 후 초기화 후 input append
-                    inputListMap.append(buffer)
-                    buffer.removeAll()
-                    buffer.append(input)
-                    continue
-                }
-                // 버퍼가 두개 차있고 마지막 원소가 jung이면서 input이 jong일경우
-            } else if buffer.count == 2 {
-                if hangul.jung.contains(buffer[1]),
-                   hangul.jong.contains(input) {
-                    if index < queue.count - 1 &&
-                        hangul.twiceJongValue.contains(input + queue[index + 1]) {
-                        //                    buffer.removeLast()
-                        let target = input + queue[index + 1]
-                        let targetIndex = hangul.twiceJongValue.firstIndex(of: target)!
-                        buffer.append(hangul.jong[hangul.twiceJongIndexAndValue[targetIndex].1])
-                        isFlag = true
-                    } else {
-                        // buffer에 input append
-                        buffer.append(input)
-                    }
-                    // buffer가 꽉 찼으므로 inputListMap에 append 하고 초기화
-                    inputListMap.append(buffer)
-                    buffer.removeAll()
-                    continue
-                    // 아닐경우
-                } else {
-                    // inputListMap에 buffer append하고 초기화 후 input append
-                    inputListMap.append(buffer)
-                    buffer.removeAll()
-                    buffer.append(input)
-                }
+            if flag { flag = false; continue }
+            
+            switch state {
+            case .start:
+                stateStart(queue, index: index, lastIndex: lastIndex, flag: &flag, input: input,
+                           buffer: &buffer, inputListMap: &inputListMap, state: &state)
+            case .cho:
+                stateCho(queue, index: index, lastIndex: lastIndex, flag: &flag, input: input,
+                         buffer: &buffer, inputListMap: &inputListMap, state: &state)
+            case .jung:
+                stateJung(queue, index: index, lastIndex: lastIndex, flag: &flag, input: input,
+                          buffer: &buffer, inputListMap: &inputListMap, state: &state)
+            case .jong:
+                stateJong(queue, index: index, lastIndex: lastIndex, flag: &flag, input: input,
+                          buffer: &buffer, inputListMap: &inputListMap, state: &state)
             }
         }
-        // 혹시 buffer에 데이터가 남아있을경우 inputListMap에 append
+        
         if !buffer.isEmpty { inputListMap.append(buffer) }
+        
         return inputListMap
     }
     
@@ -217,5 +135,161 @@ extension KeyboardIOManager {
     func join(queue: [String]) -> String {
         let sliceInputQueue = sliceInputQueue(queue: queue)
         return joinHangul(inputListMap: sliceInputQueue)
+    }
+}
+
+// MARK: - Helper
+extension KeyboardIOManager {
+    /// state가 start일때
+    func stateStart(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String, buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
+        if hangul.cho.contains(input) {
+            // 자음일때
+            buffer.append(input)
+            state = .cho
+        } else {
+            // 모음일때
+            if index < lastIndex {
+                let checkResult = checkAndSumDoubleJungsung(input, queue[index + 1])
+                inputListMap.append([checkResult.value])
+                if checkResult.valid { flag = true }
+            } else {
+                inputListMap.append([input])
+            }
+            state = .start
+        }
+    }
+
+    /// state가 cho일때
+    func stateCho(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String, buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
+        if hangul.cho.contains(input) {
+            // 자음일때
+            inputListMap.append(buffer)
+            buffer = [input]
+            state = .cho
+        } else {
+            // 모음일때
+            if index < lastIndex {
+                let checkResult = checkAndSumDoubleJungsung(input, queue[index + 1])
+                buffer.append(checkResult.value)
+                if checkResult.valid { flag = true }
+            } else {
+                buffer.append(input)
+            }
+            state = .jung
+        }
+    }
+
+    /// state가 jung일때
+    func stateJung(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String, buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
+        if hangul.cho.contains(input) {
+            // 자음일때
+            if index < lastIndex {
+                let checkResult = checkAndSumDoubleJongsung(input, queue[index + 1])
+                buffer.append(checkResult.value)
+                if checkResult.valid { flag = true }
+            } else {
+                buffer.append(input)
+            }
+            state = .jong
+        }
+    }
+
+    /// state가 jong일때
+    func stateJong(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String, buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
+        if hangul.cho.contains(input) {
+            // 자음일때
+            inputListMap.append(buffer)
+            buffer = [input]
+            state = .cho
+        } else {
+            // 모음일때
+            let jungsung: [String]
+            if index < lastIndex {
+                let checkResult = checkAndSumDoubleJungsung(input, queue[index + 1])
+                jungsung = [checkResult.value]
+                if checkResult.valid { flag = true }
+            } else {
+                jungsung = [input]
+            }
+            
+            let sliceResult = sliceDoubleJongsung(char: buffer.removeLast())
+            if sliceResult.count == 2 {
+                // 쌍자음일때
+                buffer.append(sliceResult[0])
+                inputListMap.append(buffer)
+                buffer = [String(sliceResult[1])] + jungsung
+            } else {
+                // 아닐때
+                inputListMap.append(buffer)
+                buffer = [String(sliceResult[0])] + jungsung
+            }
+            state = .jung
+        }
+    }
+    
+    /// 중성이 쌍모음인지 확인
+    func isDoubleJungsung(_ first: String, _ second: String) -> Bool {
+        let target = first + second
+        if hangul.doubleJungValue.contains(target) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    /// 모음 두개를 쌍모음 한개로 합치기
+    func addDoubleJungsung(_ first: String, _ second: String) -> String {
+        let target = first + second
+        let targetIndex = hangul.doubleJungValue.firstIndex(of: target)!
+        return hangul.doubleJungValueAndSumValue[targetIndex].1
+    }
+
+    /// 중성이 쌍모음인지 확인하고 쌍모음이라면 한개로 합쳐서 리턴
+    /// 쌍모음이 아니면 원래 모음만 리턴
+    func checkAndSumDoubleJungsung(_ first: String, _ second: String) -> (value: String, valid: Bool) {
+        if isDoubleJungsung(first, second) {
+            return (addDoubleJungsung(first, second), true)
+        } else {
+            return (first, false)
+        }
+    }
+
+    /// 종성이 쌍모음인지 확인
+    func isDoubleJongsung(_ first: String, _ second: String) -> Bool {
+        let target = first + second
+        if hangul.doubleJongValue.contains(target) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    /// 모음 두개를 쌍모음 한개로 합치기
+    func addDoubleJongsung(_ first: String, _ second: String) -> String {
+        let target = first + second
+        let targetIndex = hangul.doubleJongValue.firstIndex(of: target)!
+        return hangul.doubleJongValueAndSumValue[targetIndex].1
+    }
+
+    /// 종성이 쌍자음인지 확인후  쌍자음이라면 한개로 합쳐서 리턴
+    /// 쌍자음이 아니면 원래 자음만 리턴
+    func checkAndSumDoubleJongsung(_ first: String, _ second: String) -> (value: String, valid: Bool) {
+        if isDoubleJongsung(first, second) {
+            return (addDoubleJongsung(first, second), true)
+        } else {
+            return (first, false)
+        }
+    }
+
+    /// 쌍자음을 자음 두개로 나누기
+    func sliceDoubleJongsung(char: String) -> [String] {
+        let doubleJongsung = hangul.doubleJongValueAndSumValue.map { $0.1 }
+        if doubleJongsung.contains(char) {
+            let index = doubleJongsung.firstIndex(of: char)!
+            let doubleJong = hangul.doubleJongValueAndSumValue[index].0
+            return [String(doubleJong.first!), String(doubleJong.last!)]
+        } else {
+            return [char]
+        }
     }
 }
