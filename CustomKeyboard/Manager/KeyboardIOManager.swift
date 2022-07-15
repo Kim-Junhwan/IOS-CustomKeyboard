@@ -100,32 +100,47 @@ extension KeyboardIOManager {
         return inputListMap
     }
     
-    /// 초성, 중성, 종성으로 나뉘어진 문자들 단어 하나로 합치기
+    /// buffer에 있는것을 하나의 단어로 조합
+    func calculateUnicode(buffer: [String]) -> String {
+        var chosung: Int = 0
+        var jungsung: Int = 0
+        var jongsung: Int = 0
+        
+        buffer.enumerated().forEach { index, char in
+            switch index {
+            case 0:
+                chosung = hangul.cho.firstIndex(of: buffer[0])!
+            case 1:
+                jungsung = hangul.jung.firstIndex(of: buffer[1])!
+            case 2:
+                jongsung = hangul.jong.firstIndex(of: buffer[2])!
+            default:
+                break
+            }
+        }
+        
+        let joinUniValue = (chosung * 21 + jungsung) * 28 + jongsung + 0xAC00
+        
+        if let uni = Unicode.Scalar(joinUniValue) {
+            return String(uni)
+        }
+        return ""
+    }
+    
+    /// inputListMap을 하나의 문장으로 조합
     func joinHangul(inputListMap: [[String]]) -> String {
         var result = ""
         
-        // 조합
         inputListMap.forEach { buffer in
-            // buffer가 3개 다있을경우 초성, 중성, 종성 계산해서 조합
-            if buffer.count == 3 {
-                let chosung = hangul.cho.firstIndex(of: buffer[0])!
-                let jungsung = hangul.jung.firstIndex(of: buffer[1])!
-                let jongsung = hangul.jong.firstIndex(of: buffer[2])!
-                let joinChar = (chosung * 21 + jungsung) * 28 + jongsung + 0xAC00
-                if let uni = Unicode.Scalar(joinChar) {
-                    result += String(uni)
-                }
-                // buffer가 두개있을경우 초성, 중성만 계산해서 조합
-            } else if buffer.count == 2 {
-                let chosung = hangul.cho.firstIndex(of: buffer[0])!
-                let jungsung = hangul.jung.firstIndex(of: buffer[1])!
-                let joinChar = (chosung * 21 + jungsung) * 28 + 0xAC00
-                if let uni = Unicode.Scalar(joinChar) {
-                    result += String(uni)
-                }
-                // buffer가 한개일경우 그냥 사용
-            } else if buffer.count == 1 {
+            switch buffer.count {
+            case 1:
                 result += buffer.first!
+            case 2:
+                result += calculateUnicode(buffer: buffer)
+            case 3:
+                result += calculateUnicode(buffer: buffer)
+            default:
+                break
             }
         }
         return result
@@ -141,7 +156,8 @@ extension KeyboardIOManager {
 // MARK: - Helper
 extension KeyboardIOManager {
     /// state가 start일때
-    func stateStart(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String, buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
+    func stateStart(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String,
+                    buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
         if hangul.cho.contains(input) {
             // 자음일때
             buffer.append(input)
@@ -160,7 +176,8 @@ extension KeyboardIOManager {
     }
 
     /// state가 cho일때
-    func stateCho(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String, buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
+    func stateCho(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String,
+                  buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
         if hangul.cho.contains(input) {
             // 자음일때
             inputListMap.append(buffer)
@@ -180,7 +197,8 @@ extension KeyboardIOManager {
     }
 
     /// state가 jung일때
-    func stateJung(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String, buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
+    func stateJung(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String,
+                   buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
         if hangul.cho.contains(input) {
             // 자음일때
             if index < lastIndex {
@@ -191,11 +209,16 @@ extension KeyboardIOManager {
                 buffer.append(input)
             }
             state = .jong
+        } else {
+            // 모음일때
+            inputListMap.append(buffer)
+            buffer = [input]
         }
     }
 
     /// state가 jong일때
-    func stateJong(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String, buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
+    func stateJong(_ queue: [String], index: Int, lastIndex: Int, flag: inout Bool, input: String,
+                   buffer: inout [String], inputListMap: inout [[String]], state: inout HangulState) {
         if hangul.cho.contains(input) {
             // 자음일때
             inputListMap.append(buffer)

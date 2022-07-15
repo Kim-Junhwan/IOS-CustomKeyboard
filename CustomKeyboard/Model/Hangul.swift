@@ -14,8 +14,7 @@ struct Hangul {
 
     let doubleJungValueAndSumValue: [(String, String)] = [("ㅗㅏ", "ㅘ"), ("ㅗㅐ", "ㅙ"), ("ㅗㅣ", "ㅚ"), ("ㅜㅓ", "ㅝ"), ("ㅜㅔ", "ㅞ"), ("ㅜㅣ", "ㅟ"), ("ㅡㅣ", "ㅢ"), ("ㅏㅣ", "ㅐ"), ("ㅓㅣ", "ㅔ"), ("ㅑㅣ", "ㅒ"), ("ㅕㅣ", "ㅖ")]
 
-    let doubleJongValueAndSumValue: [(String, String)] = [("ㄱㅅ", "ㄳ"), ("ㄴㅈ", "ㄵ"), ("ㄴㅎ", "ㄶ"), ("ㄹㄱ", "ㄺ"), ("ㄹㅁ", "ㄻ"), ("ㄹㅂ", "ㄼ"), ("ㄹㅅ", "ㄽ"), ("ㄹㅌ", "ㄾ"), ("ㄹㅍ", "ㄿ"), ("ㄹㅎ", "ㅀ"), ("ㅂㅅ", "ㅄ"), ("ㅅㅅ", "ㅆ")]
-
+    let doubleJongValueAndSumValue: [(String, String)] = [("ㄱㅅ", "ㄳ"), ("ㄴㅈ", "ㄵ"), ("ㄴㅎ", "ㄶ"), ("ㄹㄱ", "ㄺ"), ("ㄹㅁ", "ㄻ"), ("ㄹㅂ", "ㄼ"), ("ㄹㅅ", "ㄽ"), ("ㄹㅌ", "ㄾ"), ("ㄹㅍ", "ㄿ"), ("ㄹㅎ", "ㅀ"), ("ㅂㅅ", "ㅄ")]
 
     lazy var doubleJungValue = doubleJungValueAndSumValue.map { $0.0 }
     lazy var doubleJongValue = doubleJongValueAndSumValue.map { $0.0 }
