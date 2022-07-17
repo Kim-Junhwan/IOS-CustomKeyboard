@@ -25,9 +25,9 @@ class WriteReviewViewController: UIViewController {
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 1
         textView.font = UIFont.systemFont(ofSize: 20)
-        guard let loadNib = Bundle.main.loadNibNamed("CustomKeyboardView", owner: nil)?.first as? CustomKeyboardView else { return textView}
-        loadNib.delegate = keyboardIOManager
-        textView.inputView = loadNib
+        guard let customKeyboard = Bundle.main.loadNibNamed(CustomKeyboardView.identifier, owner: nil)?.first as? CustomKeyboardView else { return textView}
+        customKeyboard.delegate = keyboardIOManager
+        textView.inputView = customKeyboard
         textView.becomeFirstResponder()
         
         return textView
@@ -101,7 +101,6 @@ class WriteReviewViewController: UIViewController {
         
         let cursorPosition = writeReviewTextView.offset(from: writeReviewTextView.beginningOfDocument, to: selectedRange.start)
         
-//        let beforeCusorRange = text.index(text.startIndex)..<text.index(text.endIndex, offsetBy: cursorPosition)
         let afterCusorRange = text.index(text.startIndex, offsetBy: cursorPosition)..<text.index(text.endIndex, offsetBy: 0)
         let afterCusorText = text[afterCusorRange]
         return String(afterCusorText)
