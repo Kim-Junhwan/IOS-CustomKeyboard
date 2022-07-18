@@ -25,6 +25,7 @@ class KeyboardIOManager {
     // extension
     private var hangul = Hangul()
     var inputQueue = [String]()
+    private var combinationQueue = [String]()
     private var queueText = ""
     // extension
 }
@@ -33,7 +34,8 @@ class KeyboardIOManager {
 extension KeyboardIOManager: CustomKeyboardDelegate {
     func hangulKeypadTap(char: String) {
         inputQueue.append(char)
-        let joinHangul = join(queue: inputQueue)
+        combinationQueue.append(char)
+        let joinHangul = join(queue: combinationQueue)
         queueText = joinHangul
         inputCaracter(joinHangul)
     }
@@ -64,6 +66,7 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
     
     func spaceKeypadTap() {
         inputQueue = [" "]
+        combinationQueue = [" "]
         inputCaracter(" ")
     }
 }
@@ -99,6 +102,11 @@ extension KeyboardIOManager {
         
         if !buffer.isEmpty { inputListMap.append(buffer) }
         
+        if inputListMap.count > 1, let count = inputListMap.last?.count {
+            combinationQueue.removeSubrange(0..<combinationQueue.count - count)
+        }
+        
+        print(inputListMap)
         return inputListMap
     }
     

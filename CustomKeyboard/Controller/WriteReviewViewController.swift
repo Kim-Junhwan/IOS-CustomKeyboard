@@ -58,21 +58,27 @@ class WriteReviewViewController: UIViewController {
     // MARK: - Method
     func bindingKeyboardIOManager() {
         // 입력시
+//        keyboardIOManager.inputCaracter = { [weak self] in
+//            guard let self = self else { return }
+//            if $0 == " " {
+//                // space바 입력시
+//                self.queueJoinText.removeAll()
+//            } else {
+//                // 한글 입력시
+//                let currentQueueCount = self.queueJoinText.count
+//                (0..<currentQueueCount).forEach { _ in
+//                    if !self.writeReviewTextView.text.isEmpty {
+//                        self.writeReviewTextView.deleteBackward()
+//                    }
+//                }
+//            }
+//            self.queueJoinText = $0
+//            self.writeReviewTextView.insertText($0)
+//        }
+        
         keyboardIOManager.inputCaracter = { [weak self] in
             guard let self = self else { return }
-            if $0 == " " {
-                // space바 입력시
-                self.queueJoinText.removeAll()
-            } else {
-                // 한글 입력시
-                let currentQueueCount = self.queueJoinText.count
-                (0..<currentQueueCount).forEach { _ in
-                    if !self.writeReviewTextView.text.isEmpty {
-                        self.writeReviewTextView.deleteBackward()
-                    }
-                }
-            }
-            self.queueJoinText = $0
+            self.writeReviewTextView.deleteBackward()
             self.writeReviewTextView.insertText($0)
         }
         
