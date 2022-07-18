@@ -34,8 +34,10 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
     }
     
     func deleteKeypadTap() {
-        if !inputQueue.isEmpty {
+        if inputQueue.count > 1 {
             inputQueue.removeLast()
+        } else {
+            removeAllQueue()
         }
         combinationQueue = inputQueue
         let joinText = join(queue: combinationQueue)
@@ -47,9 +49,7 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
     }
     
     func spaceKeypadTap() {
-        isNewQueue = true
-        inputQueue.removeAll()
-        combinationQueue.removeAll()
+        removeAllQueue()
         inputCaracter(" ", isNewQueue)
     }
 }
@@ -177,8 +177,14 @@ extension KeyboardIOManager {
         } else {
             // 모음일때
             inputListMap.append(buffer)
-            buffer = [input]
-            state = hangul.cho.contains(input) ? .cho : .jung
+            if hangul.jung.contains(input) {
+                buffer.removeAll()
+                inputListMap.append([input])
+                state = .start
+            } else {
+                buffer = [input]
+                state = hangul.cho.contains(input) ? .cho : .jung
+            }
         }
     }
 
@@ -307,5 +313,12 @@ extension KeyboardIOManager {
             return String(uni)
         }
         return ""
+    }
+    
+    /// remove All Queue
+    func removeAllQueue() {
+        inputQueue.removeAll()
+        combinationQueue.removeAll()
+        isNewQueue = true
     }
 }

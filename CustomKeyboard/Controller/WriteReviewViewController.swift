@@ -60,10 +60,10 @@ class WriteReviewViewController: UIViewController {
         keyboardIOManager.inputCaracter = { [weak self] in
             guard let self = self else { return }
             if !$1 {
-                print("hgjgygjh")
                 self.writeReviewTextView.deleteBackward()
                 self.currentCombinationText.removeLast()
                 self.currentCombinationText.append($0)
+                print(self.currentCombinationText)
             } else {
                 self.currentCombinationText = " "
             }
@@ -127,10 +127,8 @@ extension WriteReviewViewController {
 extension WriteReviewViewController: UITextViewDelegate {
     func textViewDidChangeSelection(_ textView: UITextView) {
         if getStringAfterCursor() != beforeCusorAfterString {
-            keyboardIOManager.inputQueue.removeAll()
-            keyboardIOManager.combinationQueue.removeAll()
+            keyboardIOManager.removeAllQueue()
             currentCombinationText = " "
-            keyboardIOManager.isNewQueue = true
         }
         
         beforeCusorAfterString = getStringAfterCursor()
