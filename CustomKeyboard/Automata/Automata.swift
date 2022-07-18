@@ -195,9 +195,15 @@ class Automata {
             syllableStorage[syllableStorage.count - 1] = syllable
             inputStatus = .doubleJongseong
         } else {
-            syllable.append(currInput)
-            syllableStorage[syllableStorage.count - 1] = syllable
-            inputStatus = .finish
+            if currInput == "ㄸ" || currInput == "ㅃ" || currInput == "ㅉ" {
+                syllable = [currInput]
+                syllableStorage.append(syllable)
+                inputStatus = .jungseong
+            } else {
+                syllable.append(currInput)
+                syllableStorage[syllableStorage.count - 1] = syllable
+                inputStatus = .finish
+            }
         }
     }
     
