@@ -17,7 +17,7 @@ class WriteReviewViewController: UIViewController {
     weak var delegate: WriteReviewViewControllerDelegate?
     let keyboardIOManager = KeyboardIOManager()
     private var beforeCusorAfterString = ""
-    private var queueJoinText = ""
+    private var currentCombinationText = " "
     
     // MARK: - ViewProperties
     private lazy var customKeyboard: CustomKeyboardView = {
@@ -57,48 +57,34 @@ class WriteReviewViewController: UIViewController {
     
     // MARK: - Method
     func bindingKeyboardIOManager() {
-        // 입력시
-//        keyboardIOManager.inputCaracter = { [weak self] in
-//            guard let self = self else { return }
-//            if $0 == " " {
-//                // space바 입력시
-//                self.queueJoinText.removeAll()
-//            } else {
-//                // 한글 입력시
-//                let currentQueueCount = self.queueJoinText.count
-//                (0..<currentQueueCount).forEach { _ in
-//                    if !self.writeReviewTextView.text.isEmpty {
-//                        self.writeReviewTextView.deleteBackward()
-//                    }
-//                }
-//            }
-//            self.queueJoinText = $0
-//            self.writeReviewTextView.insertText($0)
-//        }
-        
         keyboardIOManager.inputCaracter = { [weak self] in
             guard let self = self else { return }
-            self.writeReviewTextView.deleteBackward()
+            if !$1 {
+                print("hgjgygjh")
+                self.writeReviewTextView.deleteBackward()
+                self.currentCombinationText.removeLast()
+                self.currentCombinationText.append($0)
+            } else {
+                self.currentCombinationText = " "
+            }
             self.writeReviewTextView.insertText($0)
         }
         
-        //삭제시
         keyboardIOManager.deleteCaracter = { [weak self] in
             guard let self = self else { return }
-            if $0 == "" {
-                self.writeReviewTextView.deleteBackward()
-                self.queueJoinText = ""
-            } else {
-                if !self.writeReviewTextView.text.isEmpty {
-                    if $2 {
-                        self.writeReviewTextView.deleteBackward()
-                    } else {
-                        self.writeReviewTextView.deleteBackward()
-                        self.writeReviewTextView.deleteBackward()
-                    }
-                    self.writeReviewTextView.insertText($0)
-                    self.queueJoinText = $1
+            if !$0.isEmpty {
+                let count = self.currentCombinationText.count == $0.count ?
+                $0.count : $0.count + 1
+                (0..<count).forEach { _ in
+                    self.writeReviewTextView.deleteBackward()
                 }
+                self.writeReviewTextView.insertText($0)
+            } else {
+                self.writeReviewTextView.deleteBackward()
+            }
+            self.currentCombinationText = $0
+            if self.currentCombinationText == "" {
+                self.currentCombinationText = " "
             }
         }
         
@@ -142,7 +128,9 @@ extension WriteReviewViewController: UITextViewDelegate {
     func textViewDidChangeSelection(_ textView: UITextView) {
         if getStringAfterCursor() != beforeCusorAfterString {
             keyboardIOManager.inputQueue.removeAll()
-            queueJoinText = ""
+            keyboardIOManager.combinationQueue.removeAll()
+            currentCombinationText = " "
+            keyboardIOManager.isNewQueue = true
         }
         
         beforeCusorAfterString = getStringAfterCursor()

@@ -9,7 +9,7 @@ import UIKit
 
 protocol CustomKeyboardDelegate : AnyObject{
     func hangulKeypadTap(char: String)
-    func backKeypadTap()
+    func deleteKeypadTap()
     func enterKeypadTap()
     func spaceKeypadTap()
 }
@@ -37,7 +37,7 @@ class CustomKeyboardView: UIView {
     
     // MARK: - Action
     @IBAction func backKeypadTap(_ sender: UIButton) {
-        delegate?.backKeypadTap()
+        delegate?.deleteKeypadTap()
     }
     
     @IBAction func enterKeypadTap(_ sender: UIButton) {

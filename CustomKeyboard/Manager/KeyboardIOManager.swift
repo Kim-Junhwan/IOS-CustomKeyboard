@@ -13,21 +13,15 @@ class KeyboardIOManager {
         case start, cho, jung, jong
     }
     
-    enum InputQueueState {
-        case empty, exist
-    }
-    
     // MARK: - Properties
-    var inputCaracter: ((String) -> Void)!
-    var deleteCaracter: ((String, String, Bool) -> Void)!
+    var inputCaracter: ((String, Bool) -> Void)!
+    var deleteCaracter: ((String) -> Void)!
     var dismiss: (() -> Void)!
     
-    // extension
     private var hangul = Hangul()
     var inputQueue = [String]()
-    private var combinationQueue = [String]()
-    private var queueText = ""
-    // extension
+    var combinationQueue = [String]()
+    var isNewQueue = false
 }
 
 // MARK: - CustomKeyboardDelegate
@@ -35,29 +29,17 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
     func hangulKeypadTap(char: String) {
         inputQueue.append(char)
         combinationQueue.append(char)
-        let joinHangul = join(queue: combinationQueue)
-        queueText = joinHangul
-        inputCaracter(joinHangul)
+        inputCaracter(join(queue: combinationQueue), isNewQueue)
+        isNewQueue = false
     }
     
-    func backKeypadTap() {
-        if inputQueue.count >= 2 {
+    func deleteKeypadTap() {
+        if !inputQueue.isEmpty {
             inputQueue.removeLast()
-            let joinQueue = join(queue: inputQueue)
-            guard let lastCaracter = joinQueue.last else {
-                deleteCaracter("", "", false)
-                return
-            }
-            if joinQueue.count == queueText.count {
-                deleteCaracter(String(lastCaracter), joinQueue, true)
-            } else {
-                deleteCaracter(String(lastCaracter), joinQueue, false)
-            }
-            queueText = joinQueue
-        } else {
-            inputQueue.removeAll()
-            deleteCaracter("", "", false)
         }
+        combinationQueue = inputQueue
+        let joinText = join(queue: combinationQueue)
+        deleteCaracter(joinText)
     }
     
     func enterKeypadTap() {
@@ -65,9 +47,10 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
     }
     
     func spaceKeypadTap() {
-        inputQueue = [" "]
-        combinationQueue = [" "]
-        inputCaracter(" ")
+        isNewQueue = true
+        inputQueue.removeAll()
+        combinationQueue.removeAll()
+        inputCaracter(" ", isNewQueue)
     }
 }
 
@@ -106,7 +89,6 @@ extension KeyboardIOManager {
             combinationQueue.removeSubrange(0..<combinationQueue.count - count)
         }
         
-        print(inputListMap)
         return inputListMap
     }
     
