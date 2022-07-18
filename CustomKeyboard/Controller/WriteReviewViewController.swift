@@ -35,7 +35,7 @@ class WriteReviewViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         keyboardIOManager.updateTextView = { [weak self] in
-            self?.writeReviewTextView.insertText($0)
+            self?.writeReviewTextView.text = $0
         }
         view.backgroundColor = .systemBackground
         configureSubViews()

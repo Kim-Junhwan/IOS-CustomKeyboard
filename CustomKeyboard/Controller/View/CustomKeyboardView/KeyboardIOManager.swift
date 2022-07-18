@@ -15,13 +15,13 @@ class KeyboardIOManager {
     }
     
     var updateTextView: ((String) -> Void)!
-
+    let automata = Automata()
     
 }
 
 extension KeyboardIOManager: CustomKeyboardDelegate {
     func hangulKeypadTap(char: String) {
-        self.input = char
+        input = automata.makeSyllable(char)
     }
     
     func backKeypadTap() {
