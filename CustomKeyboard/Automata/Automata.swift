@@ -38,6 +38,7 @@ class Automata {
     var inputStatus = InputStatus.start
     var inputKind: InputKind?
     
+// MARK: - automata handling
     func makeSyllable(_ input: String) -> String {
         
         if choArray.contains(input) || jongArray.contains(input) {
@@ -87,6 +88,7 @@ class Automata {
             if inputKind == .vowel {
                 seperateSyllable(by: input)
             } else {
+                
                 inputStatus = .start
                 start(input)
             }
@@ -98,152 +100,151 @@ class Automata {
         return assembleSyllable()
     }
     
-    func start(_ input: String) {
+// MARK: - start
+    func start(_ currInput: String) {
         print(#function)
-        if choArray.contains(input) {
-            if doubleChoArray.contains(where: {$0.0 == input }) {
+        if choArray.contains(currInput) {
+            if doubleChoArray.contains(where: {$0.0 == currInput }) {
                 inputStatus = .choseong
             } else {
                 inputStatus = .jungseong
             }
         } else {
-            if doubleJungArray.contains(where: {$0.0 == input}) {
+            if doubleJungArray.contains(where: {$0.0 == currInput}) {
                 inputStatus = .doubleJungseong
             } else {
                 inputStatus = .start
             }
         }
-        syllable = [input]
+        syllable = [currInput]
         syllableStorage.append(syllable)
     }
     
-    func choseong(_ currentInput: String) {
+// MARK: - choseong handling
+    func choseong(_ currInput: String) {
         print(#function)
         let prevInput = syllable[0]
-        if prevInput == currentInput {
-            syllable = [didDoubleOnset(with: currentInput)]
+        if prevInput == currInput {
+            syllable = [didDoubleChoseong(with: currInput)]
             syllableStorage[syllableStorage.count - 1] = syllable
             inputStatus = .jungseong
         } else {
-            syllable = [currentInput]
+            syllable = [currInput]
             syllableStorage.append(syllable)
             inputStatus = .choseong
         }
     }
 
-    func didDoubleOnset(with currentInput: String) -> String {
+    func didDoubleChoseong(with currInput: String) -> String {
         print(#function)
-        guard let index = doubleChoArray.firstIndex(where: {$0.0 == currentInput}) else { return "" }
+        guard let index = doubleChoArray.firstIndex(where: {$0.0 == currInput}) else { return "" }
         return doubleChoArray[index].2
     }
-
-    func jungseong(_ currentInput: String) {
+    
+// MARK: - jungseong handling
+    func jungseong(_ currInput: String) {
         print(#function)
-        if doubleJungArray.contains(where: {$0.0 == currentInput}) { // 복합모음 가능성 O
-            syllable.append(currentInput)
+        if doubleJungArray.contains(where: {$0.0 == currInput}) {
+            syllable.append(currInput)
             syllableStorage[syllableStorage.count - 1] = syllable
             inputStatus = .doubleJungseong
-        } else { // 복합모음 가능성 X
-            syllable.append(currentInput)
+        } else {
+            syllable.append(currInput)
             syllableStorage[syllableStorage.count - 1] = syllable
             inputStatus = .jongseong
         }
     }
-
-    func doubleJungseong(_ currentInput: String) {
+    
+    func canBeDoubleJungseong(with prevInput: String, _ currInput: String) -> Bool {
+        print(#function)
+        var bool: Bool = false
+        doubleJungArray.forEach {
+            if $0.0 == prevInput, $0.1 == currInput { bool = true }
+        }
+        return bool
+    }
+    
+    func doubleJungseong(_ currInput: String) {
         print(#function)
         let prevInput = syllable[syllable.count - 1]
-        if canBeDoubleJungseong(with: prevInput, currentInput) {
-            syllable[1] = didDoubleNucleus(with: prevInput, currentInput)
+        if canBeDoubleJungseong(with: prevInput, currInput) {
+            syllable[1] = didDoubleJungseong(with: prevInput, currInput)
             syllableStorage[syllableStorage.count - 1] = syllable
             inputStatus = .jongseong
         } else {
-            syllable = [didDoubleNucleus(with: prevInput, currentInput)]
+            syllable = [didDoubleJungseong(with: prevInput, currInput)]
             syllableStorage[syllableStorage.count - 1] = syllable
             inputStatus = .start
         }
     }
-    
-    func canBeDoubleJungseong(with prevInput: String, _ currentInput: String) -> Bool {
-        print(#function)
-        var bool: Bool = false
-        doubleJungArray.forEach {
-            if $0.0 == prevInput, $0.1 == currentInput {
-                bool = true
-            }
-        }
-        return bool
-    }
 
-    func didDoubleNucleus(with previousInput: String, _ currentInput: String) -> String {
+    func didDoubleJungseong(with prevInput: String, _ currInput: String) -> String {
         print(#function)
         var result = ""
         doubleJungArray.forEach {
-            if $0.0 == previousInput && $0.1 == currentInput {
-                result = $0.2
-            }
+            if $0.0 == prevInput && $0.1 == currInput { result = $0.2 }
         }
         return result
     }
 
-    func jongseong(_ currentInput: String) {
+// MARK: - jongseong handling
+    func jongseong(_ currInput: String) {
         print(#function)
-        if doubleJongArray.contains(where: {$0.0 == currentInput}) {
-            syllable.append(currentInput)
+        if doubleJongArray.contains(where: {$0.0 == currInput}) {
+            syllable.append(currInput)
             syllableStorage[syllableStorage.count - 1] = syllable
             inputStatus = .doubleJongseong
         } else {
-            syllable.append(currentInput)
+            syllable.append(currInput)
             syllableStorage[syllableStorage.count - 1] = syllable
             inputStatus = .finish
         }
     }
+    
+    func canBeDoubleJongseong(with prevInput: String, _ currInput: String) -> Bool {
+        print(#function)
+        var bool: Bool = false
+        doubleJongArray.forEach {
+            if $0.0 == prevInput, $0.1 == currInput { bool = true }
+        }
+        return bool
+    }
 
-    func doubleJongseong(_ currentInput: String) {
+    func doubleJongseong(_ currInput: String) {
         print(#function)
         let prevInput = syllable[syllable.count - 1]
-        if canBeDoubleJongseong(with: prevInput, currentInput) {
-            let doubleJongseong = didDoubleJongseong(with: prevInput, currentInput)
+        if canBeDoubleJongseong(with: prevInput, currInput) {
+            let doubleJongseong = didDoubleJongseong(with: prevInput, currInput)
             syllable[2] = doubleJongseong
             syllableStorage[syllableStorage.count - 1] = syllable
             inputStatus = .finish
         } else {
-            syllable = [currentInput]
+            syllable = [currInput]
             syllableStorage.append(syllable)
             inputStatus = .jungseong
         }
     }
-    
-    func canBeDoubleJongseong(with prevInput: String, _ currentInput: String) -> Bool {
-        print(#function)
-        var bool: Bool = false
-        doubleJongArray.forEach {
-            if $0.0 == prevInput, $0.1 == currentInput {
-                bool = true
-            }
-        }
-        return bool
-    }
 
-    func didDoubleJongseong(with previousInput: String, _ currentInput: String) -> String {
+    func didDoubleJongseong(with prevInput: String, _ currInput: String) -> String {
         print(#function)
         var result = ""
         doubleJongArray.forEach {
-            if $0.0 == previousInput, $0.1 == currentInput {
-                result = $0.2
-            }
+            if $0.0 == prevInput, $0.1 == currInput { result = $0.2 }
         }
         return result
     }
     
+// MARK: - assemble & deassemble
+    
+    // 모음이 입력되어 앞 글자의 받침과 분리되면서 한 글자 완성하기
     func seperateSyllable(by input: String) {
         print(#function)
         guard let latestJong = syllableStorage.last?.last else { return }
-        if doubleJongArray.contains(where: {$0.2 == latestJong}) { // 마지막 받침이 쌍자음
+        if doubleJongArray.contains(where: {$0.2 == latestJong}) {
             guard let index = doubleJongArray.firstIndex(where: { $0.2 == latestJong }) else { return }
             syllableStorage[syllableStorage.count - 1][2] = doubleJongArray[index].0
             syllable = [doubleJongArray[index].1, input]
-        } else if jongArray.contains(latestJong) { // 마지막 받침이 홑자음
+        } else if jongArray.contains(latestJong) {
             syllableStorage[syllableStorage.count - 1].removeLast()
             syllable = [latestJong, input]
         }
@@ -300,18 +301,5 @@ class Automata {
         print(jung) // ㅣ
         print(jong) // ㄳ
     }
-    
-    func backKeypadTap() {
-        if !syllableStorage.isEmpty {
-            syllableStorage[syllableStorage.count - 1].removeLast()
-        }
-        print(syllable)
-        print(syllableStorage)
-    }
 
-    func spaceKeypadTap() {
-        syllable.append(" ")
-        print(syllable)
-        print(syllableStorage)
-    }
 }

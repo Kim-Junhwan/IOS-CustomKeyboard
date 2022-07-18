@@ -33,7 +33,7 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
     }
     
     func spaceKeypadTap() {
-        
+        input += " "
     }
     
     
