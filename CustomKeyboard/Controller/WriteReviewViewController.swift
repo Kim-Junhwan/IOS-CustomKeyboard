@@ -20,13 +20,20 @@ class WriteReviewViewController: UIViewController {
     private var queueJoinText = ""
     
     // MARK: - ViewProperties
+    private lazy var customKeyboard: CustomKeyboardView = {
+        guard let customKeyboard = Bundle.main.loadNibNamed(CustomKeyboardView.identifier, owner: nil)?.first as? CustomKeyboardView else {
+            return CustomKeyboardView()
+        }
+        customKeyboard.delegate = keyboardIOManager
+        
+        return customKeyboard
+    }()
+    
     private lazy var writeReviewTextView: UITextView = {
         let textView = UITextView()
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 1
         textView.font = UIFont.systemFont(ofSize: 20)
-        guard let customKeyboard = Bundle.main.loadNibNamed(CustomKeyboardView.identifier, owner: nil)?.first as? CustomKeyboardView else { return textView}
-        customKeyboard.delegate = keyboardIOManager
         textView.inputView = customKeyboard
         textView.becomeFirstResponder()
         
@@ -72,7 +79,7 @@ class WriteReviewViewController: UIViewController {
         //삭제시
         keyboardIOManager.deleteCaracter = { [weak self] in
             guard let self = self else { return }
-            if $0 == self.keyboardIOManager.deleteKey {
+            if $0 == "" {
                 self.writeReviewTextView.deleteBackward()
                 self.queueJoinText = ""
             } else {

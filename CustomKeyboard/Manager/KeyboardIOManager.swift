@@ -18,7 +18,6 @@ class KeyboardIOManager {
     }
     
     // MARK: - Properties
-    var deleteKey = "jlk;jkl;jtoieruogjerqpioj893475982347jdgk+_+_+_+vd;ajdslfjls;djfoisduovucxoijoirhto4j9030923"
     var inputCaracter: ((String) -> Void)!
     var deleteCaracter: ((String, String, Bool) -> Void)!
     var dismiss: (() -> Void)!
@@ -55,7 +54,7 @@ extension KeyboardIOManager: CustomKeyboardDelegate {
             queueText = joinQueue
         } else {
             inputQueue.removeAll()
-            deleteCaracter(deleteKey, "", false)
+            deleteCaracter("", "", false)
         }
     }
     
