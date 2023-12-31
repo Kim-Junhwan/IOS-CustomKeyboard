@@ -57,13 +57,11 @@
 &nbsp;
 
 # 한글 오토마타
-
-<img src = "https://s3.us-west-2.amazonaws.com/secure.notion-static.com/9b6fb980-1aa5-4694-b07a-96452875f995/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220720%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220720T063849Z&X-Amz-Expires=86400&X-Amz-Signature=2a172177cb8a0d7facb13dba52560c2c956079b0c3749f730919c890826f6c66&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22&x-id=GetObject" height="400px">
+![image](https://github.com/Kim-Junhwan/IOS-CustomKeyboard/assets/58679737/cbc1df69-a088-4ac7-a435-e879bd7bd781)
 
 오토마타를 구현하면서 가장 크게 신경쓴 부분은 효율성입니다. 처음에는 글자를 입력받으면, 입력받은 글자를 큐에 push하고, 큐를 pop해서 글자를 조합해 나가는 방식으로 구현하려 했습니다. 그러나 큐의 길이가 길어짐에 따라 시간도 오래 걸리고 음절 하나를 추가하는데 처음부터 계산을 해야하는 비효율적인 상황에 놓입니다. 따라서 오토마타처럼 현재 상태에 따라 글자를 조합해 나가는 방식으로 구현을 했습니다.
 
 ## 한글 입력
-![image](https://github.com/Kim-Junhwan/IOS-CustomKeyboard/assets/58679737/cbc1df69-a088-4ac7-a435-e879bd7bd781)
 
 오토마타 상태의 전이에 따라서 한글을 조합하는 알고리즘을 구현했습니다. 오토마타의 각 상태에 따른 상태 전이 알고리즘과 해당 상태에서 작업을 진행할 알고리즘 두개로 나뉘어져 있습니다.<br>
 <br>
